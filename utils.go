@@ -103,7 +103,7 @@ func (q *Qiniu) Prefix(prefix string) (r *Qiniu) {
 	return
 }
 
-func (u *Qiniu) bucketManager() *storage.BucketManager {
+func (u *Qiniu) BucketManager() *storage.BucketManager {
 	if u.bm != nil {
 		return u.bm
 	}
@@ -129,7 +129,7 @@ func (u *Qiniu) ForEach(limit int, f func(entries []storage.ListItem, commonPref
 		hasNext        bool = true
 	)
 	for hasNext {
-		entries, commonPrefixes, nextMarker, hasNext, err = u.bucketManager().ListFiles(u.bucket, u.prefix, "", nextMarker, 1000)
+		entries, commonPrefixes, nextMarker, hasNext, err = u.BucketManager().ListFiles(u.bucket, u.prefix, "", nextMarker, 1000)
 		if err != nil {
 			return
 		}
@@ -141,10 +141,5 @@ func (u *Qiniu) ForEach(limit int, f func(entries []storage.ListItem, commonPref
 			return
 		}
 	}
-	return
-}
-
-func (q *Qiniu) GetBuckets(shared bool) (buckets []string, err error) {
-	buckets, err = q.bucketManager().Buckets(true)
 	return
 }

@@ -20,7 +20,7 @@ func TestForEach(t *testing.T) {
 		StorageConfig(storageCfg)
 
 	var buckets []string
-	buckets, err = qn.GetBuckets(true)
+	buckets, err = qn.BucketManager().Buckets(true)
 	if err != nil {
 		panic(err)
 	}
