@@ -45,7 +45,7 @@ func (u *URLMaker) clone() (r *URLMaker) {
 	return
 }
 
-func (q *Qiniu) URL() (r *URLMaker) {
+func (q *Qiniu) NewURLMaker() (r *URLMaker) {
 	r = &URLMaker{}
 	r.qn = q
 	return

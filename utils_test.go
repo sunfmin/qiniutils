@@ -31,7 +31,7 @@ func TestForEach(t *testing.T) {
 		err = qn.Bucket(bucket).ForEach(1000, func(entries []storage.ListItem, commonPrefixes []string) error {
 			for _, en := range entries {
 				i++
-				fmt.Println(i, en.Key, qn.URL().Domain("sunfmin.com").TTL(time.Hour).Key(en.Key).PrivateURL())
+				fmt.Println(i, en.Key, qn.NewURLMaker().Domain("sunfmin.com").TTL(time.Hour).Key(en.Key).PrivateURL())
 			}
 			return nil
 		})
