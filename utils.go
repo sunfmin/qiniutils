@@ -70,7 +70,7 @@ func (u *URLMaker) Key(key string) (r *URLMaker) {
 }
 
 func (u *URLMaker) PublicURL() (r string) {
-	storage.MakePublicURL(u.domain, u.key)
+	r = storage.MakePublicURL(u.domain, u.key)
 	return
 }
 
