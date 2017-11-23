@@ -18,6 +18,7 @@ type Qiniu struct {
 	storageConfig *storage.Config
 	mac           *qbox.Mac
 	putPolicy     *storage.PutPolicy
+	putExtra      *storage.PutExtra
 }
 
 type URLMaker struct {
@@ -35,6 +36,7 @@ func (u *Qiniu) clone() (r *Qiniu) {
 	r.mac = u.mac
 	r.storageConfig = u.storageConfig
 	r.putPolicy = u.putPolicy
+	r.putExtra = u.putExtra
 	return
 }
 
@@ -156,6 +158,12 @@ func (q *Qiniu) PutPolicy(pp *storage.PutPolicy) (r *Qiniu) {
 	return
 }
 
+func (q *Qiniu) PutExtra(pe *storage.PutExtra) (r *Qiniu) {
+	r = q.clone()
+	r.putExtra = pe
+	return
+}
+
 func (q *Qiniu) Upload(key string, reader io.Reader) (err error) {
 	var pp = q.putPolicy
 	if pp == nil {
@@ -179,10 +187,13 @@ func (q *Qiniu) Upload(key string, reader io.Reader) (err error) {
 	ret := storage.PutRet{}
 	dataLen := int64(len(buffer))
 
-	putExtra := storage.PutExtra{
-		Params: map[string]string{},
+	var pe = q.putExtra
+	if pe == nil {
+		pe = &storage.PutExtra{
+			Params: map[string]string{},
+		}
 	}
-	err = formUploader.Put(context.Background(), &ret, upToken, key, bytes.NewReader(buffer), dataLen, &putExtra)
+	err = formUploader.Put(context.Background(), &ret, upToken, key, bytes.NewReader(buffer), dataLen, pe)
 	if err != nil {
 		return
 	}

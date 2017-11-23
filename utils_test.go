@@ -47,8 +47,22 @@ func TestForEach(t *testing.T) {
 }
 
 func TestUpload(t *testing.T) {
+	var err error
+	key := "hello1.txt"
 	qn := getQn().Bucket("sunfminpublic")
-	err := qn.Upload("hello.txt", strings.NewReader("Hello text"))
+	err = qn.BucketManager().Delete("sunfminpublic", key)
+	if err != nil {
+		fmt.Println(err)
+	}
+	text := ""
+	for i := 0; i < 10000; i++ {
+		text += "Hello text"
+	}
+	err = qn.PutExtra(&storage.PutExtra{
+		OnProgress: func(fsize, uploaded int64) {
+			fmt.Println("fsize = ", fsize, "uploaded = ", uploaded)
+		},
+	}).Upload(key, strings.NewReader(text))
 	if err != nil {
 		panic(err)
 	}
