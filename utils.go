@@ -1,6 +1,10 @@
 package qiniutils
 
 import (
+	"bytes"
+	"context"
+	"io"
+	"io/ioutil"
 	"time"
 
 	"github.com/qiniu/api.v7/auth/qbox"
@@ -13,6 +17,7 @@ type Qiniu struct {
 	prefix        string
 	storageConfig *storage.Config
 	mac           *qbox.Mac
+	putPolicy     *storage.PutPolicy
 }
 
 type URLMaker struct {
@@ -29,6 +34,7 @@ func (u *Qiniu) clone() (r *Qiniu) {
 	r.prefix = u.prefix
 	r.mac = u.mac
 	r.storageConfig = u.storageConfig
+	r.putPolicy = u.putPolicy
 	return
 }
 
@@ -141,5 +147,45 @@ func (u *Qiniu) ForEach(limit int, f func(entries []storage.ListItem, commonPref
 			return
 		}
 	}
+	return
+}
+
+func (q *Qiniu) PutPolicy(pp *storage.PutPolicy) (r *Qiniu) {
+	r = q.clone()
+	r.putPolicy = pp
+	return
+}
+
+func (q *Qiniu) Upload(key string, reader io.Reader) (err error) {
+	var pp = q.putPolicy
+	if pp == nil {
+		pp = &storage.PutPolicy{
+			Scope: q.bucket,
+		}
+	}
+
+	if seeker, ok := reader.(io.ReadSeeker); ok {
+		seeker.Seek(0, 0)
+	}
+
+	var buffer []byte
+	buffer, err = ioutil.ReadAll(reader)
+	if err != nil {
+		return
+	}
+
+	upToken := pp.UploadToken(q.mac)
+	formUploader := storage.NewFormUploader(q.storageConfig)
+	ret := storage.PutRet{}
+	dataLen := int64(len(buffer))
+
+	putExtra := storage.PutExtra{
+		Params: map[string]string{},
+	}
+	err = formUploader.Put(context.Background(), &ret, upToken, key, bytes.NewReader(buffer), dataLen, &putExtra)
+	if err != nil {
+		return
+	}
+
 	return
 }
